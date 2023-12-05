@@ -12,16 +12,8 @@ $file = "inputs/day5-$file" if $file =~ /test/;
 open(my $fh, '<', $file) or die $!;
 my $total = 0;
 
-my ($seeds, $s2s, $s2f, $f2w, $w2l, $l2t, $t2h, $h2l) = get_nonempty_groups($fh);
-
-my $s2s_map = input_to_map($s2s);
-my $s2f_map = input_to_map($s2f);
-my $f2w_map = input_to_map($f2w);
-my $w2l_map = input_to_map($w2l);
-my $l2t_map = input_to_map($l2t);
-my $t2h_map = input_to_map($t2h);
-my $h2l_map = input_to_map($h2l);
-
+my ($seeds, @groups) = get_nonempty_groups($fh);
+my @maps = reverse map { input_to_map($_) } @groups;
 my @seeds = get_ints(@$seeds);
 
 my $start_max = 177_942_185; # part 1 answer
@@ -51,17 +43,13 @@ say $min_loc;
 sub check_range {
     my ($min, $max, $interval) = @_;
     for (my $i = $min; $i < $max; $i += $interval) {
-        my $loc   = $i;
-        my $hum   = do_inverse_mapping($loc, $h2l_map);
-        my $temp  = do_inverse_mapping($hum, $t2h_map);
-        my $light = do_inverse_mapping($temp, $l2t_map);
-        my $water = do_inverse_mapping($light, $w2l_map);
-        my $fert  = do_inverse_mapping($water, $f2w_map);
-        my $soil  = do_inverse_mapping($fert, $s2f_map);
-        my $seed  = do_inverse_mapping($soil, $s2s_map);
+        my $res = $i;
+        for my $map (@maps) {
+            $res = do_inverse_mapping($res, $map);
+        }
 
         for my $range (@valid_ranges) {
-            if ($seed >= $range->{start} && $seed < $range->{end}) {
+            if ($res >= $range->{start} && $res < $range->{end}) {
                 return $i;
             }
         }

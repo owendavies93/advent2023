@@ -12,26 +12,17 @@ $file = "inputs/day5-$file" if $file =~ /test/;
 open(my $fh, '<', $file) or die $!;
 my $total = 0;
 
-my ($seeds, $s2s, $s2f, $f2w, $w2l, $l2t, $t2h, $h2l) = get_nonempty_groups($fh);
+my ($seeds, @groups) = get_nonempty_groups($fh);
 
-my $s2s_map = input_to_map($s2s);
-my $s2f_map = input_to_map($s2f);
-my $f2w_map = input_to_map($f2w);
-my $w2l_map = input_to_map($w2l);
-my $l2t_map = input_to_map($l2t);
-my $t2h_map = input_to_map($t2h);
-my $h2l_map = input_to_map($h2l);
+my @maps = map { input_to_map($_) } @groups;
 
 my @seeds = get_ints(@$seeds);
 my @locs = map {
-    my $seed = $_;
-    my $soil  = do_mapping($seed, $s2s_map);
-    my $fert  = do_mapping($soil, $s2f_map);
-    my $water = do_mapping($fert, $f2w_map);
-    my $light = do_mapping($water, $w2l_map);
-    my $temp  = do_mapping($light, $l2t_map);
-    my $hum   = do_mapping($temp, $t2h_map);
-    do_mapping($hum, $h2l_map);
+    my $res = $_;
+    for my $m (@maps) {
+        $res = do_mapping($res, $m);
+    }
+    $res;
 } @seeds;
 
 say min @locs;

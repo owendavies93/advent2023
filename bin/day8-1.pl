@@ -21,18 +21,10 @@ my $i = 0;
 my $total = 0;
 my $start = 'AAA';
 while ($start ne 'ZZZ') {
-    my $ins = $ins[$i];
-    if ($ins eq 'L') {
-        $start = $ns->{$start}->{l};
-    } else {
-        $start = $ns->{$start}->{r};
-    }
+    my $n = $ns->{$start};
+    $start = $ins[$i] eq 'L' ? $n->{l} : $n->{r};
     $total++;
-    if ($i >= $#ins) {
-        $i = 0;
-    } else {
-        $i++;
-    }
+    $i = $i >= $#ins ? 0 : $i + 1;
 }
 
 say $total;

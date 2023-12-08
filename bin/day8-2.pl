@@ -15,16 +15,11 @@ my $total = 0;
 my ($inst, $nodes) = get_nonempty_groups($fh);
 my @ins = split //, @$inst[0];
 my @cur_pos;
-my $start_id = 0;
 my $ns = {};
 for my $n (@$nodes) {
     my ($start, $l, $r) = $n =~ /(\w+) = \((\w+), (\w+)\)/;
     $ns->{$start} = { l => $l, r => $r };
-
-    if ((substr $start, -1) eq 'A') {
-        push @cur_pos, $start;
-        $start_id++;
-    }
+    push @cur_pos, $start if (substr $start, -1) eq 'A';
 }
 
 my $i = 0;
@@ -32,18 +27,10 @@ my @sub_totals;
 for my $p (@cur_pos) {
     my $sub_total = 0;
     while ((substr $p, -1) ne 'Z') {
-        my $ins = $ins[$i];
-        if ($ins eq 'L') {
-            $p = $ns->{$p}->{l};
-        } else {
-            $p = $ns->{$p}->{r};
-        }
+        my $n = $ns->{$p};
+        $p = $ins[$i] eq 'L' ? $n->{l} : $n->{r};
         $sub_total++;
-        if ($i >= $#ins) {
-            $i = 0;
-        } else {
-            $i++;
-        }
+        $i = $i >= $#ins ? 0 : $i + 1;
     }
     push @sub_totals, $sub_total;
 }

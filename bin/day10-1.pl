@@ -16,38 +16,28 @@ while (<$fh>) {
         if ($ch eq 'S') {
             $startx = $x;
             $starty = $y;
+            # TODO: changes depending on input
+            if ($file =~ /test/) {
+                $ns->{$x,$y} = [[$x, $y + 1], [$x + 1, $y]],
+            } elsif ($file eq 'inputs/day10') {
+                $ns->{$x,$y} = [[$x, $y + 1], [$x - 1, $y]],
+            }
         } else {
-            $ns->{$x,$y} = {
-                ch => $ch,
-                ns => get_ns($ch, $x, $y),
-            };
+            $ns->{$x,$y} = get_ns($ch, $x, $y);
         }
         $x++;
     }
     $y++;
 }
 
-# TODO: changes depending on input
-if ($file =~ /test/) {
-    $ns->{$startx,$starty} = {
-        ch => 'F',
-        ns => [[$startx, $starty + 1], [$startx + 1, $starty]],
-    };
-} elsif ($file eq 'inputs/day10') {
-    $ns->{$startx,$starty} = {
-        ch => '7',
-        ns => [[$startx, $starty + 1], [$startx - 1, $starty]],
-    };
-}
-
-my $curx = $ns->{$startx,$starty}->{ns}->[0]->[0];
-my $cury = $ns->{$startx,$starty}->{ns}->[0]->[1];
+my $curx = $ns->{$startx,$starty}->[0]->[0];
+my $cury = $ns->{$startx,$starty}->[0]->[1];
 my $lastx = $startx;
 my $lasty = $starty;
 my $length = 1;
 
 while ($curx != $startx || $cury != $starty) {
-    my $neighs = $ns->{$curx,$cury}->{ns};
+    my $neighs = $ns->{$curx,$cury};
     for (@$neighs) {
         if ($_->[0] != $lastx || $_->[1] != $lasty) {
             $lastx = $curx;
@@ -76,8 +66,6 @@ sub get_ns {
         return [[$x, $y + 1], [$x - 1, $y]];
     } elsif ($ch eq 'F') {
         return [[$x, $y + 1], [$x + 1, $y]];
-    } else {
-        die $ch if $ch ne '.';
     }
 }
 

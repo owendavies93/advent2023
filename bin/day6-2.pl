@@ -14,19 +14,13 @@ my ($times, $dists) = get_lines($fh);
 my $t = join '', get_ints($times);
 my $d = join '', get_ints($dists);
 
-my $start = find_bound(0, $t, 1);
-my $end = find_bound($t, 0, -1);
-
-say 1 + $end - $start;
-
-sub find_bound {
-    my ($s, $e, $inc) = @_;
-    my $i = $s;
-    while ($s != $e) {
-        my $left = $t - $i;
-        my $dist = $left * $i;
-        return $i if $dist > $d;
-        $i += $inc;
-    }
+my $i = 0;
+while ($i != $t) {
+    my $left = $t - $i;
+    my $dist = $left * $i;
+    last if $dist > $d;
+    $i++;
 }
+
+say 1 + $t - (2 * $i);
 

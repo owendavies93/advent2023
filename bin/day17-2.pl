@@ -2,7 +2,7 @@
 use Mojo::Base -strict;
 
 use List::AllUtils qw(:all);
-use List::PriorityQueue;
+use Array::Heap::PriorityQueue::Numeric;
 
 my $file = defined $ARGV[0] ? $ARGV[0] : 'inputs/day17';
 $file = "inputs/day17-$file" if $file =~ /test/;
@@ -36,14 +36,14 @@ my $turns = {
 my $start = [0, 0, ''];
 my $end = scalar @grid - 1;
 
-my $q = List::PriorityQueue->new();
+my $q = Array::Heap::PriorityQueue::Numeric->new; 
 my $min = ~0;
 my @pos_min;
 
-$q->insert($start, 0);
+$q->add($start, 0);
 
 while (1) {
-    my $c = $q->pop();
+    my $c = $q->get();
     last unless defined $c;
     my ($i, $dist, $last) = @$c;
     
@@ -77,7 +77,7 @@ while (1) {
                 $grid[($y + $dy * $_) * $height + ($x + $dx * $_)]
             } (1..$len);
             
-            $q->insert([$ni, $new_dist, $next], $new_dist);
+            $q->add([$ni, $new_dist, $next], $new_dist);
         }
     }
 }

@@ -12,3 +12,4 @@
 * Further improve Day 23 performance
 * Implement a version of Day 24 without shelling out to Mathematica
    * Possibly using Perl Z3 bindings? Although that's not much better
+* Make Day 25 work for all inputs

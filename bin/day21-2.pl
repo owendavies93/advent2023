@@ -29,7 +29,8 @@ while (<$fh>) {
 }
 
 my $cur_locs = {};
-$cur_locs->{$startx,$starty} = 1;
+my @parity_sets = ({}, {});
+$cur_locs->{$startx,$starty,0,0} = 1;
 
 my @ds = (
     [0,-1],[1,0],[0,1],[-1,0]
@@ -43,50 +44,39 @@ my @points;
 
 while (1) {
     if ($i == $point) {
-        my $n = scalar keys %$cur_locs;
+        my $n = scalar keys %{$parity_sets[($i + 1) % 2]};
         push @points, $n;
         $point += $w;
         last if scalar @points == 3;
     }
     my $new = {};
+    my $set = $parity_sets[$i % 2];
     for my $l (keys %$cur_locs) {
-        my ($x, $y) = split $;, $l;
+        my ($x, $y, $ex, $ey) = split $;, $l;
         for my $d (@ds) {
             my ($dx, $dy) = @$d;
-            my $nx = $x + $dx;
-            my $ny = $y + $dy;
+            my $nx = ($x + $dx) % $w;
+            my $ny = ($y + $dy) % $h;
+            my $nex = $ex + $dx;
+            my $ney = $ey + $dy;
 
-            if (!is_rock($nx,$ny)) {
-                $new->{$nx,$ny} = 1;
-            }
+            next if $rs->{$nx,$ny};
+
+            next if $set->{$nx,$ny,$nex,$ney}++;
+
+            $new->{$nx,$ny,$nex,$ney} = 1;
         }
     }
     $cur_locs = $new;
     $i++;
 }
 
-say solve(\@points, int($target / $w));
+my $goal = int($target / $w);
+my ($p0, $p1, $p2) = @points;
+my $d1 = $p1 - $p0;
+my $d2 = $p2 - $p1;
+my $dd1 = $d2 - $d1;
 
-sub solve {
-    my ($points, $goal) = @_;
-
-    my ($p0, $p1, $p2) = @$points;
-    my $d1 = $p1 - $p0;
-    my $d2 = $p2 - $p1;
-    my $dd1 = $d2 - $d1;
-
-    return $p0 + $d1 * $goal + $dd1 * int(($goal * ($goal - 1) / 2));
-}
-
-sub is_rock {
-    my ($x, $y) = @_;
-
-    return 1 if exists $rs->{$x,$y};
-    
-    my $mx = $x % $w;
-    my $my = $y % $h;
-    return 1 if exists $rs->{$mx,$my};
-
-    return 0;
-}
+my $res = $p0 + $d1 * $goal + $dd1 * int(($goal * ($goal - 1) / 2));
+say $res;
 

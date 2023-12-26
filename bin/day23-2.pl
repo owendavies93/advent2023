@@ -1,10 +1,7 @@
 #!/usr/bin/env perl
 use Mojo::Base -strict;
 
-use Data::Dumper;
 use List::AllUtils qw(:all);
-use Memoize;
-use Storable qw(dclone);
 
 my $file = defined $ARGV[0] ? $ARGV[0] : 'inputs/day23';
 $file = "inputs/day23-$file" if $file =~ /test/;
@@ -88,32 +85,28 @@ for my $k (keys %$keep) {
     }
 }
 
-my @q;
+my $first = join $;, (1,0);
+my $last = join $;, ($width - 2, $height - 1);
 my $s = {};
-$s->{1,0} = 1;
-push @q, [1, 0, $s, 0];
 
-my @end = ($width - 2, $height - 1);
-my @lens;
-while (@q) {
-    my $cur = shift @q;
-    my ($x, $y, $seen, $len) = @$cur;
+say dfs($first);
 
-    if ($x == $end[0] && $y == $end[1]) {
-        push @lens, $len;
-        next;
+sub dfs {
+    my $cur = shift;
+    return 0 if $cur eq $last;
+
+    $s->{$cur} = 1;
+    my $max_path;
+    for my $adj (keys %{$final_adjs->{$cur}}) {
+        my $dist = $final_adjs->{$cur}->{$adj};
+        next if $s->{$adj};
+        my $sub = dfs($adj);
+        next unless defined $sub;
+        $sub += $dist;
+        $max_path = $sub if !defined $max_path || $sub > $max_path;
     }
 
-    for my $adj (keys %{$adj_graph->{$x,$y}}) {
-        my ($nx, $ny) = split $;, $adj;
-        next if $seen->{$nx,$ny};
-        my $ns = dclone($seen);
-        $ns->{$nx,$ny} = 1;
-        my $l = $adj_graph->{$x,$y}->{$adj};
-        push @q, [$nx, $ny, $ns, $len + $l];
-    }
-
+    delete $s->{$cur};
+    return $max_path;
 }
-
-say max @lens;
 

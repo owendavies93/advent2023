@@ -1,8 +1,9 @@
 #!/usr/bin/env perl
 use Mojo::Base -strict;
 
+no warnings 'recursion';
+
 use List::AllUtils qw(:all);
-use Storable qw(dclone);
 
 my $file = defined $ARGV[0] ? $ARGV[0] : 'inputs/day23';
 $file = "inputs/day23-$file" if $file =~ /test/;
@@ -25,31 +26,32 @@ my @dirs = (
 
 my @slopes = ('^', '>', 'v', '<');
 
-my @q;
 my $s = {};
 $s->{1,0} = 1;
-push @q, [1, 0, $s, 0];
 
 my @end = ($width - 2, $height - 1);
-my @lens;
-while (@q) {
-    my $cur = shift @q;
-    my ($x, $y, $seen, $len) = @$cur;
 
-    if ($x == $end[0] && $y == $end[1]) {
-        push @lens, $len;
-        next;
-    }
+say dfs([1,0]);
 
-    for my $adj (adjs($x, $y, $seen)) {
+sub dfs {
+    my $cur = shift;
+    my ($x, $y) = @$cur;
+    return 0 if $x == $end[0] && $y == $end[1];
+
+    $s->{$x,$y} = 1;
+
+    my $max_path = -1;
+
+    for my $adj (adjs($x, $y, $s)) {
         my ($nx, $ny) = @$adj;
-        my $ns = dclone($seen);
-        $ns->{$nx,$ny} = 1;
-        push @q, [$nx, $ny, $ns, $len + 1];
+        next if $s->{$nx,$ny};
+        my $sub = dfs($adj) + 1;
+        $max_path = $sub if $sub > $max_path;
     }
-}
 
-say max @lens;
+    $s->{$x,$y} = 0;
+    return $max_path;
+}
 
 sub adjs {
     my ($x, $y, $seen) = @_;
